@@ -28,7 +28,7 @@ def clr_errstr(errstr):
 
 mail_log = "main.log"
 # mail_log = "/var/log/exim/main.log"
-date_patt = "2020-03-3[0-1]"
+date_patt = "2020-[0-9][0-9]-[0-9][0-9]"
 
 completed = 0
 mail_parsedata = dict()
@@ -98,9 +98,9 @@ for mail_id in mail_parsedata.keys():
 # for mail_id in mail_faildata.keys():
 #     print(mail_faildata[mail_id]["res_mail"])
 #     print(mail_faildata[mail_id]["errstr"])
-# print(len(mail_resdata))
-# print(len(mail_faildata))
-# print(len(mail_notcompl))
+print(len(mail_resdata))
+print(len(mail_faildata))
+print(len(mail_notcompl))
 
 # for err in err_sort_data:
 #     print(err)
@@ -108,3 +108,6 @@ for mail_id in mail_parsedata.keys():
 
 for key in mail_notcompl.keys():
     print(mail_notcompl[key])
+
+# for line in mail_parsedata["1jIrEn-0007Jn-7s"]:
+#     print(line)
