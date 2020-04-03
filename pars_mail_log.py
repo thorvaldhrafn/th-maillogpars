@@ -108,6 +108,3 @@ print(len(mail_notcompl))
 
 for key in mail_notcompl.keys():
     print(mail_notcompl[key])
-
-# for line in mail_parsedata["1jIrEn-0007Jn-7s"]:
-#     print(line)
