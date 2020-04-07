@@ -32,9 +32,6 @@ date_patt = "2020-[0-9][0-9]-[0-9][0-9]"
 
 completed = 0
 mail_parsedata = dict()
-mail_resdata = dict()
-mail_faildata = dict()
-mail_notcompl = dict()
 err_sort_data = dict()
 
 with open(mail_log, 'r') as f:
@@ -44,67 +41,50 @@ with open(mail_log, 'r') as f:
                 mail_id = spl_line[2]
                 if re.match("^.{6}-.{6}-.{2}", mail_id):
                         if mail_id in mail_parsedata.keys():
-                            old_lines = mail_parsedata[mail_id]
+                            old_lines = mail_parsedata[mail_id]["lines"]
                         else:
                             old_lines = list()
+                            sendr_mail = mail_instr(line)
+                            smdct = dict(send_mail=sendr_mail)
+                            mail_parsedata[mail_id] = smdct
                         old_lines.append(line.rstrip())
-                        mail_parsedata[mail_id] = old_lines
+                        mail_parsedata[mail_id]["lines"] = old_lines
 
-mail_idlist = list(mail_parsedata.keys())
-
-for mail_id in mail_idlist:
-    f_line = mail_parsedata[mail_id][0]
+for mail_id in list(mail_parsedata.keys()):
+    f_line = mail_parsedata[mail_id]["lines"][0]
     spl_line = f_line.rsplit()
     if re.match(".+root@.+", f_line) or re.match(str(".+" + mail_id + " <= <>.+"), f_line) or not re.match(".+@.+", f_line):
         del mail_parsedata[mail_id]
 
 for mail_id in mail_parsedata.keys():
-    f_line = mail_parsedata[mail_id][0]
-    l_line = mail_parsedata[mail_id][-1]
-    sendr_mail = mail_instr(f_line)
+    l_line = mail_parsedata[mail_id]["lines"][-1]
     res_mail = str()
     errstr = str()
     errstr_list = list()
     chck = 0
-    for line in mail_parsedata[mail_id][1::]:
+    for line in mail_parsedata[mail_id]["lines"][1::]:
         if re.match(".+" + mail_id + " .{2} ", line):
             res_mail = mail_instr(line)
             break
-    for line in mail_parsedata[mail_id][1::]:
+    mail_parsedata[mail_id]["res_mail"] = res_mail
+    for line in mail_parsedata[mail_id]["lines"][1::]:
         if re.match(".+SMTP error from remote mail+", line):
             errstr= re.sub('^.+?: ', '', line)
             errstr= re.sub('^.+?: ', '', errstr)
             errstr= re.sub(res_mail, '', errstr)
             chck = 1
     if chck == 0 and re.match(".+" + mail_id + " Completed", l_line):
-        mail_resdata[mail_id] = dict(res_mail=res_mail)
+        mail_parsedata[mail_id]["status"] = "sended"
     elif chck == 1 and re.match(".+" + mail_id + " Completed", l_line):
-        pl_line = mail_parsedata[mail_id][-2]
+        pl_line = mail_parsedata[mail_id]["lines"][-2]
+        errstr = clr_errstr(errstr)
+        mail_parsedata[mail_id]["errstr"] = errstr
         if re.match(str(".+" + mail_id + " => " + res_mail), pl_line):
-            mail_resdata[mail_id] = dict(res_mail=res_mail)
+            mail_parsedata[mail_id]["status"] = "sended"
         else:
-            errstr = clr_errstr(errstr)
-            mail_faildata[mail_id] = dict(res_mail=res_mail, errstr=errstr)
-            if errstr in err_sort_data.keys():
-                old_mlist = err_sort_data[errstr]["emails"]
-                old_mlist.append(res_mail)
-            else:
-                err_sort_data[errstr] = dict(emails=[res_mail])
-
+            mail_parsedata[mail_id]["status"] = "rejected"
     elif chck != 1:
-        mail_notcompl[mail_id] = dict(res_mail=res_mail, errstr=mail_parsedata[mail_id][-1])
+        mail_parsedata[mail_id]["errstr"] = errstr
+        mail_parsedata[mail_id]["status"] = "notcompl"
 
 
-# for mail_id in mail_faildata.keys():
-#     print(mail_faildata[mail_id]["res_mail"])
-#     print(mail_faildata[mail_id]["errstr"])
-print(len(mail_resdata))
-print(len(mail_faildata))
-print(len(mail_notcompl))
-
-# for err in err_sort_data:
-#     print(err)
-#     # print(err_sort_data[err])
-
-for key in mail_notcompl.keys():
-    print(mail_notcompl[key])
