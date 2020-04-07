@@ -87,4 +87,21 @@ for mail_id in mail_parsedata.keys():
         mail_parsedata[mail_id]["errstr"] = errstr
         mail_parsedata[mail_id]["status"] = "notcompl"
 
+sort_data = dict()
+for mail_id in mail_parsedata:
+    tmp_dict = mail_parsedata[mail_id]
+    try:
+        sort_key = tmp_dict["errstr"]
+        del tmp_dict["errstr"]
+        print(tmp_dict)
+        # if sort_key not in sort_data:
+        #     sort_data[sort_key] = tmp_dict
+        # else:
+        #     old_dict = sort_data[sort_key]
+        #     for key in old_dict:
+    except KeyError:
+        pass
+#
 
+# for key in mail_parsedata.keys():
+#     print(mail_parsedata[key])
